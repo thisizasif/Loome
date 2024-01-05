@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 # PassFinder - Comprehensive Info Collection Tool
 # Copyright (c) 2024 Thisizasif
