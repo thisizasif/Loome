@@ -1,19 +1,12 @@
 #!/bin/bash
-set -x
 
-# PassFinder - Comprehensive Info Collection Tool
-# Copyright (c) 2024 Thisizasif
-# https://github.com/Thisizasif/PassFinder
-
-
-echo "__________                      ___________.__            .___            ";
-echo "\______   \_____    ______ _____\_   _____/|__| ____    __| _/___________ ";
-echo "|     ___/\__  \  /  ___//  ___/|    __)  |  |/    \  / __ |/ __ \_  __ \";
-echo "|    |     / __ \_\___ \ \___ \ |     \   |  |   |  \/ /_/ \  ___/|  | \/";
-echo "|____|    (____  /____  >____  >\___  /   |__|___|  /\____ |\___  >__|   ";
-echo "                \/     \/     \/     \/            \/      \/    \/       ";
-
-echo "   - Comprehensive Password Generating Tool -"
+echo "██╗░░░░░░█████╗░░█████╗░███╗░░░███╗███████╗"
+echo "██║░░░░░██╔══██╗██╔══██╗████╗░████║██╔════╝"
+echo "██║░░░░░██║░░██║██║░░██║██╔████╔██║█████╗░░"
+echo "██║░░░░░██║░░██║██║░░██║██║╚██╔╝██║██╔══╝░░"
+echo "███████╗╚█████╔╝╚█████╔╝██║░╚═╝░██║███████╗"
+echo "╚══════╝░╚════╝░░╚════╝░╚═╝░░░░░╚═╝╚══════╝"
+echo "   - Comprehensive Info Collection Tool -"
 echo "              Made by Thisizasif"
 echo "-------------------------------------------------"
 
@@ -23,13 +16,7 @@ secure_read() {
   variable_name="$2"
   unset "$variable_name"
   prompt_with_hidden_input="Enter $prompt: "
-  while IFS= read -p "$prompt_with_hidden_input" -r -s -n 1 char; do
-    if [[ $char == $'\0' ]]; then
-      break
-    fi
-    prompt_with_hidden_input='*'
-    eval "$variable_name+=\$char"
-  done
+  read -rsp "$prompt_with_hidden_input" "$variable_name"
   echo
 }
 
@@ -51,7 +38,7 @@ secure_read "target's girlfriend's name" girlfriend_name
 secure_read "target's first car's name" first_car_name
 
 # Collect additional essential names (optional)
-read -p "Enter additional essential names (comma-separated, or press Enter to skip): " additional_names
+read -rp "Enter additional essential names (comma-separated, or press Enter to skip): " additional_names
 
 # Generate secure passwords
 password_target=$(generate_password "$target_name")
