@@ -2,83 +2,55 @@
 
 import os
 import hashlib
-import shutil
+import getpass
 
 PASSWORD_FILE = "/data/data/com.termux/files/home/.termux_lock"
-STARTUP_FILE = "/data/data/com.termux/files/home/.bashrc"
-LOCK_FILE = "/data/data/com.termux/files/home/lock.py"
-SHELL_SCRIPT = "/data/data/com.termux/files/usr/etc/bash.bashrc"
+STARTUP_SCRIPT = "/data/data/com.termux/files/usr/etc/bash.bashrc"
 
 def main():
     print("Welcome to Termux Lock Setup")
-    
-    # Move or copy lock.py to the Termux home directory
-    move_or_copy_lock_file()
-    
-    # Check if password already exists
+
+    # Check if password already set
     if os.path.exists(PASSWORD_FILE):
-        print("Password already set. Exiting.")
-        return
-    
-    # Prompt user to set password
-    password = get_password()
-    
-    # Save hashed password to file
-    save_password(password)
-    
-    print("Password set successfully.")
-    
-    # Automatically add command to Termux startup file
-    add_startup_command()
-
-def move_or_copy_lock_file():
-    if os.path.exists(LOCK_FILE):
-        print("lock.py already exists in Termux home directory.")
+        print("Password already set.")
     else:
-        try:
-            shutil.copyfile("lock.py", LOCK_FILE)
-            print("lock.py copied to Termux home directory.")
-        except Exception as e:
-            print(f"Error: {e}")
+        # Prompt user to set password
+        password = getpass.getpass("Enter your desired password: ")
+        confirm_password = getpass.getpass("Confirm your password: ")
 
-def get_password():
-    while True:
-        password = input("Enter your desired password: ")
-        confirm_password = input("Confirm your password: ")
-        
         if password == confirm_password:
-            return hash_password(password)
+            # Save hashed password to file
+            save_password(hash_password(password))
+            print("Password set successfully.")
         else:
             print("Passwords do not match. Please try again.")
+
+    # Modify Termux startup script
+    modify_startup_script()
 
 def hash_password(password):
     # Hash the password using SHA256
     return hashlib.sha256(password.encode()).hexdigest()
 
-def save_password(password):
+def save_password(password_hash):
     with open(PASSWORD_FILE, "w") as file:
-        file.write(password)
+        file.write(password_hash)
 
-def add_startup_command():
-    command = "python /data/data/com.termux/files/home/lock.py"
-    with open(STARTUP_FILE, "a") as file:
-        file.write("\n" + command)
+def modify_startup_script():
+    with open(STARTUP_SCRIPT, "r") as file:
+        script_content = file.read()
 
-    # Append command to shell initialization script to run check for password
-    with open(SHELL_SCRIPT, "a") as file:
-        file.write("\n")
-        file.write('if [ -f "/data/data/com.termux/files/home/.termux_lock" ]; then\n')
-        file.write('\tlock_file_hash=$(sha256sum /data/data/com.termux/files/home/.termux_lock | awk \'{print $1}\')\n')
-        file.write('\tpassword_hash="') # Append password hash
-        with open(PASSWORD_FILE, "r") as pfile:
-            password_hash = pfile.readline().strip()
-            file.write(password_hash)
-        file.write('"\n')
-        file.write('\tif [ "$lock_file_hash" != "$password_hash" ]; then\n')
-        file.write('\t\techo "Password required to use Termux"\n')
-        file.write('\t\texit\n')
-        file.write('\tfi\n')
-        file.write('fi\n')
+    # Check if lock check already exists in the script
+    if "lock.py" not in script_content:
+        # Add lock check to the beginning of the script
+        with open(STARTUP_SCRIPT, "w") as file:
+            file.write("#!/data/data/com.termux/files/usr/bin/sh\n")
+            file.write("python /data/data/com.termux/files/home/lock.py\n")
+            file.write("if [ ! -f /data/data/com.termux/files/home/.termux_lock ]; then\n")
+            file.write("    exit\n")
+            file.write("fi\n")
+            file.write("# Existing script content below:\n")
+            file.write(script_content)
 
 if __name__ == "__main__":
     main()
