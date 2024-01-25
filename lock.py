@@ -7,6 +7,7 @@ import shutil
 PASSWORD_FILE = "/data/data/com.termux/files/home/.termux_lock"
 STARTUP_FILE = "/data/data/com.termux/files/home/.bashrc"
 LOCK_FILE = "/data/data/com.termux/files/home/lock.py"
+SHELL_SCRIPT = "/data/data/com.termux/files/usr/etc/bash.bashrc"
 
 def main():
     print("Welcome to Termux Lock Setup")
@@ -62,6 +63,22 @@ def add_startup_command():
     command = "python /data/data/com.termux/files/home/lock.py"
     with open(STARTUP_FILE, "a") as file:
         file.write("\n" + command)
+
+    # Append command to shell initialization script to run check for password
+    with open(SHELL_SCRIPT, "a") as file:
+        file.write("\n")
+        file.write('if [ -f "/data/data/com.termux/files/home/.termux_lock" ]; then\n')
+        file.write('\tlock_file_hash=$(sha256sum /data/data/com.termux/files/home/.termux_lock | awk \'{print $1}\')\n')
+        file.write('\tpassword_hash="') # Append password hash
+        with open(PASSWORD_FILE, "r") as pfile:
+            password_hash = pfile.readline().strip()
+            file.write(password_hash)
+        file.write('"\n')
+        file.write('\tif [ "$lock_file_hash" != "$password_hash" ]; then\n')
+        file.write('\t\techo "Password required to use Termux"\n')
+        file.write('\t\texit\n')
+        file.write('\tfi\n')
+        file.write('fi\n')
 
 if __name__ == "__main__":
     main()
