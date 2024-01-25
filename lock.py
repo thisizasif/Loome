@@ -2,12 +2,17 @@
 
 import os
 import hashlib
+import shutil
 
 PASSWORD_FILE = "/data/data/com.termux/files/home/.termux_lock"
 STARTUP_FILE = "/data/data/com.termux/files/home/.bashrc"
+LOCK_FILE = "/data/data/com.termux/files/home/lock.py"
 
 def main():
     print("Welcome to Termux Lock Setup")
+    
+    # Move or copy lock.py to the Termux home directory
+    move_or_copy_lock_file()
     
     # Check if password already exists
     if os.path.exists(PASSWORD_FILE):
@@ -24,6 +29,16 @@ def main():
     
     # Automatically add command to Termux startup file
     add_startup_command()
+
+def move_or_copy_lock_file():
+    if os.path.exists(LOCK_FILE):
+        print("lock.py already exists in Termux home directory.")
+    else:
+        try:
+            shutil.copyfile("lock.py", LOCK_FILE)
+            print("lock.py copied to Termux home directory.")
+        except Exception as e:
+            print(f"Error: {e}")
 
 def get_password():
     while True:
